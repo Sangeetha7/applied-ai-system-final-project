@@ -1,133 +1,257 @@
-# 🎵 Music Recommender Simulation
+# Music Recommender Simulation
 
 ## Project Summary
 
-In this project you will build and explain a small music recommender system.
+This project is a content-based music recommendation system with integrated retrieval and reliability evaluation.
+It matters because it demonstrates practical AI engineering beyond prompting: retrieval-first inference, transparent scoring, guardrails, and measurable reliability checks.
 
-Your goal is to:
+The system does the following:
+1. Retrieves candidate songs based on user preferences before ranking.
+2. Scores candidates using genre, mood, energy, tempo, valence, danceability, and acoustic preference.
+3. Explains each recommendation with retrieval rationale and confidence.
+4. Evaluates output quality using a built-in reliability report and quality gates.
 
-- Represent songs and a user "taste profile" as data
-- Design a scoring rule that turns that data into recommendations
-- Evaluate what your system gets right and wrong
-- Reflect on how this mirrors real world AI recommenders
+## Original Project (Modules 1-3)
 
-Real-world recommendation engines use complex hybrid systems blending collaborative filtering (user behavior patterns) and content-based filtering (audio features), combined with ranking rules for diversity. This project simulates a foundational **content-based filtering** recommender. It prioritizes matching a user's stated taste profile directly to the acoustic properties and metadata of songs using a custom mathematical scoring rule.
+Original project name: Music Recommender Simulation.
 
----
+In Modules 1-3, the project goal was to build a foundational content-based recommender that maps user preferences (genre, mood, energy) to songs and returns ranked results. The original system demonstrated basic recommendation logic and explanation strings, but relied on a simpler global scoring approach. This final version extends that foundation into a retrieval-first pipeline with guardrails and measurable reliability checks.
 
-## How The System Works
+## Advanced AI Features Included
 
-This system uses a content-based approach, calculating a similarity score between a user's ideal preferences and each song's actual attributes. It follows a specific "Algorithm Recipe" based on a balanced weighting strategy:
+### 1. Retrieval-Augmented Recommendation (RAG-style retrieval)
 
-**1. Input (User Preferences):**
-The user provides their target criteria: preferred genre, preferred mood, and target energy level. The system also loads the song database (`songs.csv`).
+The recommender does not score the full catalog blindly first. It retrieves candidates in stages and then ranks those candidates:
+1. strict filter: genre + mood + tight energy band
+2. relaxed filter: genre or mood + wider energy band
+3. fallback filter: energy-only band, then full-catalog fallback if needed
 
-**2. Process (The Scoring Loop):**
-For every single song in the database, the system calculates a matching score starting at 0:
-*   **Genre Match:** +2.0 points (acts as a heavy anchor).
-*   **Mood Match:** +1.0 point (important, but secondary to genre).
-*   **Energy Similarity:** Up to +1.0 point. Calculated using absolute variance: `1.0 - abs(target_energy - song_energy)`.
+This retrieval stage materially changes behavior and is integrated directly in [src/recommender.py](src/recommender.py).
 
-**3. Output (The Ranking):**
-The recommender combines these points into a total score for every song, sorts the catalog in descending order, and returns the top *N* highest-scoring tracks.
+### 2. Reliability and Testing System
 
-### Potential Biases
-* **Genre Over-prioritization:** Because genre is weighted so heavily (+2.0), this system might ignore a fantastic song that perfectly matches the user's mood and energy simply because it was labeled with an adjacent or different genre.
-* **Lack of Serendipity:** By strictly recommending exactly what the user asks for mathematically, the system creates a content "echo chamber," leaving little room for unexpected discovery.
+Reliability is integrated into runtime and tests:
+1. per-profile reliability metrics in [src/reliability.py](src/reliability.py)
+2. quality-gate pass/fail checks in [src/quality_gates.py](src/quality_gates.py)
+3. deterministic and regression tests in [tests/test_reliability_regression.py](tests/test_reliability_regression.py)
 
+## Design and Architecture
 
----
+```mermaid
+flowchart TD
+	A[Human User Input\nGenre, Mood, Energy, Acoustic Pref] --> B[Input Guardrails\nNormalize, Clamp, Validate]
+	B --> C[Retriever\nStrict -> Relaxed -> Fallback]
+	C --> D[Ranker / Scorer\nGenre, Mood, Energy, Tempo, Valence, Danceability, Acoustic]
+	D --> E[Explainer\nRetrieval Reason + Confidence]
+	E --> F[Top-K Recommendations]
 
-## Getting Started
+	F --> G[Reliability Evaluator\nMatch Rates, Energy Error, Low-Confidence Rate]
+	G --> H[Quality Gates\nPASS/FAIL Threshold Checks]
 
-### Setup
+	H --> I[Human Review\nInspect Outputs and Logs]
+	J[Automated Tests\nUnit + Regression + Determinism] --> I
+	J --> H
+```
 
-1. Create a virtual environment (optional but recommended):
+![System architecture diagram](assets/architecture_system_dataflow.png)
 
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate      # Mac or Linux
-   .venv\Scripts\activate         # Windows
+## Architecture Overview
 
-2. Install dependencies
+How data flows:
+1. Input: user profile enters the system.
+2. Process: guardrails validate input, retriever narrows candidates, ranker scores them, explainer adds reasons and confidence.
+3. Output: top-k recommendations are shown.
+4. Validation: evaluator computes reliability metrics and quality gates enforce minimum standards.
+5. Human and testing checkpoints: humans review outputs/logs, and automated tests continuously verify behavior.
+
+## Sample Interactions
+
+The following examples are from running [src/main.py](src/main.py) with the current implementation.
+
+### Example 1: High-Energy Pop
+
+Input:
+- genre: pop
+- mood: happy
+- energy: 0.90
+
+Result snapshot:
+- Sunrise City (Neon Echo), score 5.20, confidence high (0.78)
+- Gym Hero (Max Pulse), score 4.40, confidence medium (0.66)
+- Retrieval mode: relaxed (genre or mood plus wider energy band)
+
+Takeaway: standard preference profiles receive strong, higher-confidence matches.
+
+### Example 2: Chill Lofi
+
+Input:
+- genre: lofi
+- mood: chill
+- energy: 0.30
+
+Result snapshot:
+- Midnight Coding (LoRoom), score 5.24, confidence high (0.79)
+- Library Rain (Paper Lanterns), score 5.11, confidence high (0.77)
+- Retrieval mode: relaxed (genre or mood plus wider energy band)
+
+Takeaway: when mood, genre, and energy align with catalog coverage, both quality and confidence improve.
+
+### Example 3: Zero-Energy EDM (stress case)
+
+Input:
+- genre: edm
+- mood: intense
+- energy: 0.00
+
+Result snapshot:
+- Tear Drops (Melancholy Strings), score 2.83, confidence low (0.38)
+- Spacewalk Thoughts (Orbit Bloom), score 2.66, confidence low (0.36)
+- Retrieval mode: energy-fallback
+
+Takeaway: contradictory requests trigger fallback retrieval and lower confidence, which is surfaced explicitly.
+
+Reliability output from the same run:
+- Overall genre match rate: 0.23
+- Overall mood match rate: 0.27
+- Overall average energy error: 0.173
+- Overall low-confidence rate: 0.67
+- Quality Gates: PASS
+
+## Reproducible Setup
+
+Tested environment:
+1. Windows
+2. Python 3.13
+
+### 1) Create and activate virtual environment
+
+Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+Mac/Linux:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+### 2) Install pinned dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Run the app:
+### 3) Run the application
 
 ```bash
 python -m src.main
 ```
 
-### Running Tests
+The app prints:
+1. recommendation tables per profile
+2. structured logs for retrieval/guardrail behavior
+3. reliability report
+4. quality gates pass/fail status
 
-Run the starter tests with:
+### 4) Run tests
 
 ```bash
-pytest
+pytest -q
 ```
 
-You can add more tests in `tests/test_recommender.py`.
+## Guardrails and Logging
 
----
+The pipeline includes production-style safety checks:
+1. input normalization and clamping (for example, energy in [0, 1])
+2. safe handling of invalid/missing preferences
+3. safe handling of empty catalogs and non-positive k
+4. malformed CSV row skipping with warnings
+5. structured logging for load, retrieval mode, backfill, and ranking
 
-## Experiments You Tried
+## Design Decisions and Trade-offs
 
-Here are the experiments I ran to test the recommender's sensitivity and boundaries:
+1. Retrieval-before-ranking: I chose a staged retriever (strict, relaxed, fallback) so the system can narrow candidates before scoring. Trade-off: fallback can return less semantically aligned songs when the catalog is sparse.
+2. Interpretable weighted scoring: I used explicit feature weights (genre, mood, energy, tempo, valence, danceability, acousticness) for transparency. Trade-off: hand-tuned weights are easier to explain but less adaptive than learned models.
+3. Confidence labels in explanations: I added confidence values and labels to make uncertainty visible. Trade-off: confidence is heuristic (score- and mode-based), not statistically calibrated.
+4. Runtime reliability gates: I integrated quality gates directly into the run output so failures are immediately visible. Trade-off: threshold settings can be strict or lenient depending on dataset size and goals.
 
-*   **Testing Adversarial Profiles ("Trick" Inputs):** I created conflicting profiles like "Zero-Energy EDM" and "High-Energy Sad" to see how the system handles contradictions. Initially, because Genre was weighted so heavily (+2.0), the system recommended a very high-energy track for "Zero-Energy EDM" simply because it had an EDM tag. Genre overpowered everything else.
-*   **Changing Weights (Halving Genre to +1.0, Doubling Energy to +2.0 max):** To fix the issue above, I reduced genre importance and made energy the deciding factor. 
-*   **Results of the Weight Change:** The system traded one bias for another. It became perfectly accurate at matching the "vibe" (energy level), but it started completely ignoring the requested genre. For "Zero-Energy EDM", the new logic recommended a low-energy classical/sad song, missing the point of EDM entirely. 
-*   **Takeaway:** This proved that simple additive scoring (just adding points together) is inherently flawed for edge cases. Real recommenders need a mix of strict rules (e.g., "Must filter by EDM first") combined with continuous scoring (e.g., "Sort remaining EDM by energy proximity") to handle contradictory user tastes.
+## Testing Summary
 
----
+Current automated test status: 12 passing tests.
 
-## Limitations and Risks
+At a glance:
+1. Test result: 12/12 passing.
+2. Runtime quality gates: PASS.
+3. Primary weakness: contradictory profiles increase low-confidence recommendations.
 
-Here are the main limitations and risks associated with this recommender system:
+What worked:
+1. Deterministic behavior for fixed inputs and fixed dataset.
+2. Retrieval behavior verification (including fallback/backfill paths).
+3. Guardrail validation (invalid inputs, empty catalog, non-positive k).
+4. Reliability metric and quality gate checks.
 
-- **Additive Scoring Flaws:** Because it relies on adding points together, the system struggles with contradictory user preferences. It cannot use "hard filters" (e.g., strictly enforcing a specific genre before scoring), meaning a strong match in one area can override a complete mismatch in another.
-- **Tiny, Static Catalog:** The simulation relies on a very small dataset (17 songs). Often, the top recommendations are just the "least bad" options available rather than genuinely great matches.
-- **Limited Feature Set:** The scoring currently only considers Genre, Mood, and Energy. It ignores other valuable data points available in the dataset (like tempo, valence, and acousticness) and completely lacks understanding of lyrics or cultural context.
-- **No Behavioral Data (Pure Content-Based):** The model does not learn from user behavior over time (like skips, replays, or likes), nor does it utilize collaborative filtering to see what similar users are enjoying.
-- **The "Echo Chamber" Effect:** By purely optimizing to mathematically match exactly what the user inputs, it leaves no room for serendipity or organically discovering new music outside their boundaries.
+What did not work initially:
+1. Retrieval sometimes produced fewer than k results, which broke expectations.
+2. Module execution path initially failed on import style.
 
----
+What I changed:
+1. Added candidate backfill to preserve top-k behavior.
+2. Added package-safe import fallback in [src/main.py](src/main.py).
 
-## Challenge 4: Visual Summary Table Update
+What I learned:
+1. Reliability checks and explicit thresholds catch regressions faster than manual inspection.
+2. Clear explanations and logs make AI systems much easier to debug and trust.
 
-The terminal output of the simulation has been updated to use clean ASCII table formatting using Python's built-in string alignment features (no external dependencies like `tabulate` required). When running the system, it prints an aligned, readable table with fixed-width columns for "Song Title", "Score", and "Reasons".
+## Step 4: Reliability and Evaluation
 
-Example output format: 
-![Terminal Output](images/challenge_4.png)
+Reliability methods used:
+1. Automated tests: unit, integration, quality-gate, and deterministic regression tests.
+2. Confidence scoring: each recommendation includes a confidence value and label.
+3. Logging and error handling: structured logs plus guardrails for invalid inputs and fallback behavior.
+4. Human evaluation: manual review of recommendation quality and explanation clarity across normal and adversarial profiles.
 
+Current summary (latest run):
+1. 12 out of 12 automated tests passed.
+2. Quality gates passed (overall genre 0.23, mood 0.27, average energy error 0.173, low-confidence rate 0.67).
+3. The system remains strongest on standard profiles (for example, High-Energy Pop and Chill Lofi).
+4. It still struggles on contradictory profiles (for example, Zero-Energy EDM), where fallback retrieval increases low-confidence outputs.
+5. Reliability improved after adding input validation/clamping, staged retrieval, and top-k backfill logic.
+
+One-line evaluation summary:
+12/12 tests passed; quality gates passed; reliability is strongest when profile intent matches available catalog semantics, and weakest under contradictory constraints.
 
 ## Reflection
 
-Read and complete `model_card.md`:
+This project reinforced that good AI systems are more than a scoring formula. The strongest improvement came from combining retrieval, guardrails, and evaluation into one pipeline with observable behavior. I also learned that contradictory user requests are inevitable, so confidence labels and fallback strategies are essential for honest outputs.
 
-[**Model Card**](model_card.md)
+From a problem-solving perspective, the biggest shift was moving from "does it return songs?" to "is the system reliable, testable, and explainable?" That mindset made the project much closer to real-world AI engineering and portfolio-ready for future employers.
 
-Write 1 to 2 paragraphs here about what you learned:
+## Repository Structure
 
-I learned that recommenders turn data into predictions by translating messy human concepts (like "chill" or "intense") into strict mathematical formulas. Our engine simply awards points for exact label strings and penalizes the numeric difference between requested energy and actual track energy. By ranking these final calculated scores, the algorithm fakes an "understanding" of user preferences, even though it is just sorting rows of simple math output. 
+Core files:
+1. [src/recommender.py](src/recommender.py): retrieval, scoring, explanations, guardrails
+2. [src/main.py](src/main.py): CLI runner, profile execution, reliability and quality report output
+3. [src/reliability.py](src/reliability.py): metric computation for profile and batch outputs
+4. [src/quality_gates.py](src/quality_gates.py): threshold checks and PASS/FAIL logic
 
-Bias and unfairness slip into these systems incredibly easily through both the dataset and the algorithm logic itself. If a catalog only features extreme high or low energy songs, users who want moderate music are unfairly penalized by the "energy gap" calculation. Furthermore, the reliance on exact text matching ("lofi" vs "chillhop") traps users in filter bubbles. It limits their ability to discover cross-genre artists because the rigid constraints of additive scoring prevent the kind of serendipitous discovery humans naturally excel at.
+Tests:
+1. [tests/test_recommender.py](tests/test_recommender.py)
+2. [tests/test_reliability.py](tests/test_reliability.py)
+3. [tests/test_quality_gates.py](tests/test_quality_gates.py)
+4. [tests/test_reliability_regression.py](tests/test_reliability_regression.py)
 
----
+## Known Limitations
 
-## Terminal output showing the recommendations (song titles, scores, and reasons)
+1. Small static dataset (17 songs) limits coverage and diversity.
+2. No collaborative filtering or user-behavior learning.
+3. Alias maps for mood/genre are curated and not learned automatically.
 
-![Terminal Output](images/recommendation_terminal_output.png)
- 
-## Terminal Output for Stress Test with Diverse Profiles
+## Additional Documentation
 
-![Terminal Output](images/aggressive_lullaby.png)
-![Terminal Output](images/chill_lofi.png)
-![Terminal Output](images/deep_intense_rock.png)
-![Terminal Output](images/high_energy_pop.png)
-![Terminal Output](images/zero_energy_edm.png)
-![Terminal Output](images/high_energy_sad.png)
+1. [model_card.md](model_card.md)
+2. [reflection.md](reflection.md)
 

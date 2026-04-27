@@ -423,7 +423,12 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
     song_obj = _dict_to_song(song)
     return Recommender._score_song(user, song_obj)
 
-def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
+def recommend_songs(
+    user_prefs: Dict,
+    songs: List[Dict],
+    k: int = 5,
+    retrieval_documents: Dict | None = None,
+) -> List[Tuple[Dict, float, str]]:
     """Evaluates and ranks all songs to return the top k recommendations."""
     if not songs:
         logger.warning("recommend_songs called with empty catalog")
@@ -435,7 +440,7 @@ def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tup
 
     user = _prefs_to_user_profile(user_prefs)
     song_objects = [_dict_to_song(song) for song in songs]
-    retrieval_docs = load_retrieval_documents()
+    retrieval_docs = retrieval_documents if retrieval_documents is not None else load_retrieval_documents()
     recommender = Recommender(song_objects, retrieval_documents=retrieval_docs)
 
     top_songs = recommender.recommend(user, k=k)

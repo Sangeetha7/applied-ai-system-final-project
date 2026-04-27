@@ -1,0 +1,18 @@
+id,title,artist,genre,mood,energy,tempo_bpm,valence,danceability,acousticness
+1,Sunrise City,Neon Echo,pop,happy,0.82,118,0.84,0.79,0.18
+2,Midnight Coding,LoRoom,lofi,chill,0.42,78,0.56,0.62,0.71
+3,Storm Runner,Voltline,rock,intense,0.91,152,0.48,0.66,0.10
+4,Library Rain,Paper Lanterns,lofi,chill,0.35,72,0.60,0.58,0.86
+5,Gym Hero,Max Pulse,pop,intense,0.93,132,0.77,0.88,0.05
+6,Spacewalk Thoughts,Orbit Bloom,ambient,chill,0.28,60,0.65,0.41,0.92
+7,Coffee Shop Stories,Slow Stereo,jazz,relaxed,0.37,90,0.71,0.54,0.89
+8,Night Drive Loop,Neon Echo,synthwave,moody,0.75,110,0.49,0.73,0.22
+9,Focus Flow,LoRoom,lofi,focused,0.40,80,0.59,0.60,0.78
+10,Rooftop Lights,Indigo Parade,indie pop,happy,0.76,124,0.81,0.82,0.35
+11,Tear Drops,Melancholy Strings,classical,sad,0.15,65,0.20,0.30,0.95
+12,Street Poets,Mic Drop,hip hop,groovy,0.70,95,0.75,0.85,0.20
+13,Neon Boots,Rodeo Rider,country,uplifting,0.78,115,0.85,0.65,0.40
+14,Island Breeze,Sun Seekers,reggae,carefree,0.55,85,0.80,0.75,0.30
+15,Steel Thunder,Iron Lords,metal,angry,0.98,160,0.30,0.40,0.02
+16,Velvet Night,Soul Sistas,r&b,romantic,0.60,80,0.70,0.68,0.45
+17,Bass Heavy,DJ Boost,edm,energetic,0.88,128,0.60,0.80,0.05

@@ -1,0 +1,25 @@
+workout_user_profile = {
+    # Categorical targets
+    "favorite_genre": "pop",
+    "favorite_mood": "intense",
+    
+    # Numerical targets
+    "target_energy": 0.90,
+    "target_tempo_bpm": 135,
+    "target_valence": 0.70,
+    "target_danceability": 0.85,
+    "target_acousticness": 0.05
+}
+
+reading_user_profile = {
+    # Categorical targets
+    "favorite_genre": "classical",
+    "favorite_mood": "relaxed",
+    
+    # Numerical targets
+    "target_energy": 0.15,       # Relaxed, low intensity
+    "target_tempo_bpm": 65,      # Slow, soothing pace
+    "target_valence": 0.30,      # Often more somber/serious than "happy" pop
+    "target_danceability": 0.20, # Not meant for dancing
+    "target_acousticness": 0.95  # Almost purely acoustic instruments
+}

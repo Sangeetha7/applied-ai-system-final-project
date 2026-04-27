@@ -10,28 +10,37 @@ You will implement the functions in recommender.py:
 """
 
 import logging
+import os
 
 try:
     # Package execution path: python -m src.main
-    from src.recommender import load_songs, recommend_songs
+    from src.recommender import load_songs, load_retrieval_documents, recommend_songs
     from src.reliability import evaluate_batch
     from src.quality_gates import evaluate_quality_gates
     from src.rag_enhancement import evaluate_rag_enhancement
 except ImportError:
     # Direct script execution path: python src/main.py
-    from recommender import load_songs, recommend_songs
+    from recommender import load_songs, load_retrieval_documents, recommend_songs
     from reliability import evaluate_batch
     from quality_gates import evaluate_quality_gates
     from rag_enhancement import evaluate_rag_enhancement
 
 
-def main() -> None:
+def configure_logging() -> None:
+    """Sets default logging for cleaner terminal tables during demos."""
+    level_name = os.getenv("APP_LOG_LEVEL", "ERROR").upper()
+    level = getattr(logging, level_name, logging.WARNING)
     logging.basicConfig(
-        level=logging.INFO,
+        level=level,
         format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
     )
 
+
+def main() -> None:
+    configure_logging()
+
     songs = load_songs("data/songs.csv") 
+    retrieval_docs = load_retrieval_documents()
 
     # Define distinct user preference profiles
     user_profiles = {
@@ -56,7 +65,12 @@ def main() -> None:
         print(f"{'Song Title (Artist)':<45} | {'Score':<5} | {'Reasons'}")
         print(f"{'-'*100}")
         
-        recommendations = recommend_songs(user_prefs, songs, k=5)
+        recommendations = recommend_songs(
+            user_prefs,
+            songs,
+            k=5,
+            retrieval_documents=retrieval_docs,
+        )
         profile_results[profile_name] = recommendations
 
         for rec in recommendations:

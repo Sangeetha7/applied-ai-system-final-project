@@ -1,0 +1,14 @@
+{
+  "genre_aliases": {
+    "electronic": ["edm", "synthwave"],
+    "rap": ["hip hop"],
+    "soul": ["r&b"],
+    "indie": ["indie pop"]
+  },
+  "mood_aliases": {
+    "calm": ["chill", "relaxed"],
+    "upbeat": ["happy", "uplifting", "energetic"],
+    "melancholic": ["sad", "moody"],
+    "steady": ["focused"]
+  }
+}

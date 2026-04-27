@@ -58,8 +58,6 @@ flowchart TD
 	J --> H
 ```
 
-![System architecture diagram](assets/architecture_system_dataflow.png)
-
 ## Architecture Overview
 
 How data flows:

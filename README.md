@@ -294,3 +294,33 @@ Stretch feature (+2):
 
 For ethics and responsible AI discussion, see the Reflection and Ethics section in [reflection.md](reflection.md).
 
+## Presentation and Portfolio
+
+### GitHub Repository
+
+Add your final repository URL here:
+- GitHub: REPLACE_WITH_GITHUB_REPO_LINK
+
+### Loom Walkthrough (Required)
+
+Add your Loom walkthrough URL here:
+- Loom Video: REPLACE_WITH_LOOM_VIDEO_LINK
+
+The walkthrough should clearly show:
+1. End-to-end system run with 2-3 input profiles.
+2. AI feature behavior (retrieval stages and RAG enhancement behavior).
+3. Reliability and evaluation behavior (confidence, quality gates, and test summary).
+4. Clear outputs for each case.
+
+### Portfolio Reflection
+
+This project reflects how I approach AI engineering in production-like conditions: I design for both capability and reliability. I extended a baseline recommender into a retrieval-first system with confidence-aware explanations, guardrails, and evaluation gates, then validated it with deterministic and regression tests. The result demonstrates my ability to build AI systems that are measurable, transparent, and maintainable, not just functional.
+
+### 5-7 Minute Presentation Flow
+
+1. Problem and original project scope (about 45 seconds).
+2. What I added: retrieval-first architecture, reliability harness, and RAG enhancement (about 60 seconds).
+3. Live demo with 2-3 inputs and output interpretation (about 2-3 minutes).
+4. Reliability and evaluation evidence: tests, quality gates, and enhancement metrics (about 60 seconds).
+5. Reflection, limitations, and next improvements (about 45 seconds).
+

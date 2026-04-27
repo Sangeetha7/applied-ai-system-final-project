@@ -28,6 +28,11 @@ The recommender does not score the full catalog blindly first. It retrieves cand
 
 This retrieval stage materially changes behavior and is integrated directly in [src/recommender.py](src/recommender.py).
 
+Stretch enhancement implemented:
+1. Added external retrieval documents in [data/retrieval_documents.json](data/retrieval_documents.json) as a second data source.
+2. Retrieval now uses both song metadata and custom alias knowledge to expand queries.
+3. Measured improvement is reported in runtime output under RAG Enhancement Evaluation.
+
 ### 2. Reliability and Testing System
 
 Reliability is integrated into runtime and tests:
@@ -215,14 +220,30 @@ Reliability methods used:
 4. Human evaluation: manual review of recommendation quality and explanation clarity across normal and adversarial profiles.
 
 Current summary (latest run):
-1. 12 out of 12 automated tests passed.
+1. 13 out of 13 automated tests passed.
 2. Quality gates passed (overall genre 0.23, mood 0.27, average energy error 0.173, low-confidence rate 0.67).
 3. The system remains strongest on standard profiles (for example, High-Energy Pop and Chill Lofi).
 4. It still struggles on contradictory profiles (for example, Zero-Energy EDM), where fallback retrieval increases low-confidence outputs.
 5. Reliability improved after adding input validation/clamping, staged retrieval, and top-k backfill logic.
 
 One-line evaluation summary:
-12/12 tests passed; quality gates passed; reliability is strongest when profile intent matches available catalog semantics, and weakest under contradictory constraints.
+13/13 tests passed; quality gates passed; reliability is strongest when profile intent matches available catalog semantics, and weakest under contradictory constraints.
+
+## Stretch Feature: RAG Enhancement (+2)
+
+What was built:
+1. Extended retrieval with custom external documents ([data/retrieval_documents.json](data/retrieval_documents.json)).
+2. Combined two sources during retrieval: song catalog metadata + retrieval document aliases.
+3. Added an enhancement evaluator in [src/rag_enhancement.py](src/rag_enhancement.py) and runtime reporting in [src/main.py](src/main.py).
+
+Measured impact (latest run):
+1. Profiles evaluated: 3 synonym-heavy profiles.
+2. Baseline semantic hit rate: 0.00 (built-in aliases only).
+3. Enhanced semantic hit rate: 1.00 (with custom retrieval documents).
+4. Absolute improvement: +1.00.
+
+Interpretation:
+The custom document source improves retrieval for non-canonical user language (for example, electronic, rap, soul, calm, upbeat, melancholic), which increases semantic alignment in top-k recommendations.
 
 ## Reflection
 

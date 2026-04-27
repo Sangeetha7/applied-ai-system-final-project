@@ -16,11 +16,13 @@ try:
     from src.recommender import load_songs, recommend_songs
     from src.reliability import evaluate_batch
     from src.quality_gates import evaluate_quality_gates
+    from src.rag_enhancement import evaluate_rag_enhancement
 except ImportError:
     # Direct script execution path: python src/main.py
     from recommender import load_songs, recommend_songs
     from reliability import evaluate_batch
     from quality_gates import evaluate_quality_gates
+    from rag_enhancement import evaluate_rag_enhancement
 
 
 def main() -> None:
@@ -93,6 +95,15 @@ def main() -> None:
     if failures:
         for failure in failures:
             print(f"- {failure}")
+
+    enhancement_metrics = evaluate_rag_enhancement(songs, k=5)
+    print(f"\n{'='*100}")
+    print("RAG Enhancement Evaluation")
+    print(f"{'='*100}")
+    print(f"Profiles evaluated: {int(enhancement_metrics['profiles_evaluated'])}")
+    print(f"Baseline semantic hit rate: {enhancement_metrics['baseline_semantic_hit_rate']:.2f}")
+    print(f"Enhanced semantic hit rate: {enhancement_metrics['enhanced_semantic_hit_rate']:.2f}")
+    print(f"Absolute improvement: {enhancement_metrics['absolute_improvement']:.2f}")
 
 
 if __name__ == "__main__":

@@ -266,21 +266,6 @@ Tests:
 4. [tests/test_reliability_regression.py](tests/test_reliability_regression.py)
 5. [tests/test_rag_enhancement.py](tests/test_rag_enhancement.py)
 
-## Rubric Alignment Checklist
-
-Required features:
-1. Base project identification and scope: documented in Original Project (Modules 1-3).
-2. Substantial new AI feature: retrieval-first RAG-style recommendation plus reliability harness, integrated in [src/recommender.py](src/recommender.py), [src/reliability.py](src/reliability.py), and [src/quality_gates.py](src/quality_gates.py).
-3. System architecture diagram: Mermaid + exported image in Design and Architecture, matching current pipeline and data flow.
-4. End-to-end demonstration: runnable CLI in [src/main.py](src/main.py) with 3 sample interaction outputs shown above.
-5. Reliability/evaluation/guardrails: input validation, confidence scoring, logging, reliability report, and quality gates with runtime examples.
-6. Documentation and setup: step-by-step install/run/test instructions plus sample input/output examples.
-7. Reflection on AI collaboration and design: limitations, misuse prevention, helpful/flawed AI suggestions in [reflection.md](reflection.md).
-
-Stretch feature (+2):
-1. RAG enhancement via multi-source retrieval (song catalog + custom docs in [data/retrieval_documents.json](data/retrieval_documents.json)).
-2. Measured output-quality impact reported under Stretch Feature: baseline semantic hit rate 0.00, enhanced 1.00, absolute improvement +1.00.
-
 ## Known Limitations
 
 1. Small static dataset (17 songs) limits coverage and diversity.
@@ -298,11 +283,11 @@ For ethics and responsible AI discussion, see the Reflection and Ethics section 
 
 ### GitHub Repository
 
-- GitHub: REPLACE_WITH_GITHUB_REPO_LINK
+- GitHub: [Github Repo Link](https://github.com/Sangeetha7/applied-ai-system-final-project.git)
 
 ### Loom Walkthrough (Required)
 
-- Loom Video: REPLACE_WITH_LOOM_VIDEO_LINK
+- Loom Video: [Loom Video](https://www.loom.com/share/d4741087a2ac4a0689a487366557e763)
 
 ### Portfolio Reflection
 

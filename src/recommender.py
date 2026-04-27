@@ -1,4 +1,5 @@
 import csv
+import json
 import logging
 from typing import List, Dict, Tuple
 from dataclasses import dataclass
@@ -38,8 +39,9 @@ class Recommender:
     OOP implementation of the recommendation logic.
     Required by tests/test_recommender.py
     """
-    def __init__(self, songs: List[Song]):
+    def __init__(self, songs: List[Song], retrieval_documents: Dict | None = None):
         self.songs = songs
+        self.retrieval_documents = retrieval_documents or {}
         self._last_retrieval_mode = ""
         self._last_retrieval_by_song_id: Dict[int, str] = {}
         logger.info("Recommender initialized with %d songs", len(songs))
@@ -82,7 +84,12 @@ class Recommender:
             "r&b": {"r&b", "soul"},
             "lofi": {"lofi", "chillhop"},
         }
-        return alias_map.get(canonical, {canonical})
+        aliases = set(alias_map.get(canonical, {canonical}))
+
+        external_aliases = Recommender._external_aliases("genre_aliases", canonical, {})
+        aliases.update(external_aliases)
+
+        return aliases
 
     @staticmethod
     def _mood_aliases(mood: str) -> set[str]:
@@ -95,7 +102,34 @@ class Recommender:
             "focused": {"focused", "moody", "chill"},
             "sad": {"sad", "moody"},
         }
-        return alias_map.get(canonical, {canonical})
+        aliases = set(alias_map.get(canonical, {canonical}))
+
+        external_aliases = Recommender._external_aliases("mood_aliases", canonical, {})
+        aliases.update(external_aliases)
+
+        return aliases
+
+    @staticmethod
+    def _external_aliases(section: str, canonical: str, docs: Dict) -> set[str]:
+        """Gets alias matches from custom retrieval docs with reverse lookup support."""
+        section_map = docs.get(section, {}) if isinstance(docs, dict) else {}
+        normalized_section = {
+            Recommender._normalize_label(key): {
+                Recommender._normalize_label(value) for value in values
+            }
+            for key, values in section_map.items()
+            if isinstance(values, list)
+        }
+
+        aliases = set(normalized_section.get(canonical, set()))
+        aliases.add(canonical)
+
+        for key, values in normalized_section.items():
+            if canonical in values:
+                aliases.add(key)
+                aliases.update(values)
+
+        return aliases
 
     def _retrieve_candidates(self, user: UserProfile, k: int) -> List[Song]:
         """Retrieves candidate songs before scoring and ranking."""
@@ -107,6 +141,14 @@ class Recommender:
 
         genre_targets = self._genre_aliases(user.favorite_genre)
         mood_targets = self._mood_aliases(user.favorite_mood)
+
+        # Merge with external retrieval document aliases when available.
+        genre_targets.update(
+            self._external_aliases("genre_aliases", self._normalize_label(user.favorite_genre), self.retrieval_documents)
+        )
+        mood_targets.update(
+            self._external_aliases("mood_aliases", self._normalize_label(user.favorite_mood), self.retrieval_documents)
+        )
 
         strict: List[Song] = []
         for song in self.songs:
@@ -361,6 +403,20 @@ def load_songs(csv_path: str) -> List[Dict]:
     logger.info("Successfully loaded %d songs", len(songs_data))
     return songs_data
 
+
+def load_retrieval_documents(json_path: str = "data/retrieval_documents.json") -> Dict:
+    """Loads external retrieval aliases and knowledge documents for RAG enhancement."""
+    try:
+        with open(json_path, mode="r", encoding="utf-8") as f:
+            docs = json.load(f)
+            logger.info("Loaded retrieval documents from %s", json_path)
+            return docs
+    except FileNotFoundError:
+        logger.warning("Retrieval documents not found at %s; using built-in aliases only", json_path)
+    except json.JSONDecodeError:
+        logger.warning("Retrieval documents at %s are invalid JSON; using built-in aliases only", json_path)
+    return {}
+
 def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
     """Calculates a song's numeric score and returns a list of matching reasons based on user preferences."""
     user = _prefs_to_user_profile(user_prefs)
@@ -379,7 +435,8 @@ def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tup
 
     user = _prefs_to_user_profile(user_prefs)
     song_objects = [_dict_to_song(song) for song in songs]
-    recommender = Recommender(song_objects)
+    retrieval_docs = load_retrieval_documents()
+    recommender = Recommender(song_objects, retrieval_documents=retrieval_docs)
 
     top_songs = recommender.recommend(user, k=k)
     song_by_id = {song["id"]: song for song in songs}

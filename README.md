@@ -255,3 +255,5 @@ Tests:
 1. [model_card.md](model_card.md)
 2. [reflection.md](reflection.md)
 
+For ethics and responsible AI discussion, see the Reflection and Ethics section in [reflection.md](reflection.md).
+

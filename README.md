@@ -186,10 +186,10 @@ The pipeline includes production-style safety checks:
 
 ## Testing Summary
 
-Current automated test status: 12 passing tests.
+Current automated test status: 13 passing tests.
 
 At a glance:
-1. Test result: 12/12 passing.
+1. Test result: 13/13 passing.
 2. Runtime quality gates: PASS.
 3. Primary weakness: contradictory profiles increase low-confidence recommendations.
 
@@ -264,6 +264,22 @@ Tests:
 2. [tests/test_reliability.py](tests/test_reliability.py)
 3. [tests/test_quality_gates.py](tests/test_quality_gates.py)
 4. [tests/test_reliability_regression.py](tests/test_reliability_regression.py)
+5. [tests/test_rag_enhancement.py](tests/test_rag_enhancement.py)
+
+## Rubric Alignment Checklist
+
+Required features:
+1. Base project identification and scope: documented in Original Project (Modules 1-3).
+2. Substantial new AI feature: retrieval-first RAG-style recommendation plus reliability harness, integrated in [src/recommender.py](src/recommender.py), [src/reliability.py](src/reliability.py), and [src/quality_gates.py](src/quality_gates.py).
+3. System architecture diagram: Mermaid + exported image in Design and Architecture, matching current pipeline and data flow.
+4. End-to-end demonstration: runnable CLI in [src/main.py](src/main.py) with 3 sample interaction outputs shown above.
+5. Reliability/evaluation/guardrails: input validation, confidence scoring, logging, reliability report, and quality gates with runtime examples.
+6. Documentation and setup: step-by-step install/run/test instructions plus sample input/output examples.
+7. Reflection on AI collaboration and design: limitations, misuse prevention, helpful/flawed AI suggestions in [reflection.md](reflection.md).
+
+Stretch feature (+2):
+1. RAG enhancement via multi-source retrieval (song catalog + custom docs in [data/retrieval_documents.json](data/retrieval_documents.json)).
+2. Measured output-quality impact reported under Stretch Feature: baseline semantic hit rate 0.00, enhanced 1.00, absolute improvement +1.00.
 
 ## Known Limitations
 

@@ -14,12 +14,14 @@ User profile fields:
 
 ## Data Used
 Source: data/songs.csv
+Additional retrieval source: data/retrieval_documents.json
 
 Dataset properties:
 1. 17 songs (small, static catalog)
 2. metadata fields: title, artist, genre, mood
 3. numeric audio fields: energy, tempo_bpm, valence, danceability, acousticness
-4. no user behavior data (no clicks, skips, likes, playlists)
+4. custom retrieval alias documents for synonym expansion across genre and mood
+5. no user behavior data (no clicks, skips, likes, playlists)
 
 ## System Architecture
 
@@ -30,6 +32,11 @@ The recommender uses retrieval before ranking:
 3. fallback retrieval: energy-only band, then full-catalog fallback
 
 This retrieval stage is integrated in the main inference path and changes which songs are eligible for ranking.
+
+Stretch enhancement:
+1. external retrieval documents are loaded from data/retrieval_documents.json
+2. retrieval merges built-in aliases with external document aliases
+3. reverse alias lookup supports non-canonical user language (for example, electronic -> edm/synthwave)
 
 ### Ranking Stage
 Each candidate is scored with weighted signals:
@@ -96,6 +103,16 @@ Quality gates enforce minimum acceptable behavior:
 4. overall_low_confidence_rate <= 0.75
 
 The current application run reports Quality Gates: PASS.
+
+## Stretch Feature Evaluation (RAG Enhancement)
+Measured on synonym-heavy profiles using baseline vs enhanced retrieval:
+1. profiles evaluated: 3
+2. baseline semantic hit rate: 0.00
+3. enhanced semantic hit rate: 1.00
+4. absolute improvement: +1.00
+
+Interpretation:
+Adding a second retrieval source (custom documents) measurably improves semantic alignment when user input uses synonyms not present in the base song labels.
 
 ## Observed Behavior / Biases
 1. Small catalog means recommendations are sometimes the least-worst matches.

@@ -283,7 +283,7 @@ For ethics and responsible AI discussion, see the Reflection and Ethics section 
 
 - GitHub: [Github Repo Link](https://github.com/Sangeetha7/applied-ai-system-final-project.git)
 
-### Loom Walkthrough (Required)
+### Loom Walkthrough
 
 - Loom Video: [Loom Video](https://www.loom.com/share/d4741087a2ac4a0689a487366557e763)
 
